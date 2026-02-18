@@ -72,6 +72,7 @@ def _get_option(config: pytest.Config, cli: str, ini: str) -> str:
 @pytest.fixture(scope="session")
 def pubsub_emulator(
     request: pytest.FixtureRequest,
+    tmp_path_factory: pytest.TempPathFactory,
 ) -> Generator[EmulatorInfo]:
     """Start and manage a GCP PubSub emulator for the test session."""
     config = request.config
@@ -83,11 +84,11 @@ def pubsub_emulator(
         _get_option(config, "pubsub_timeout", "pubsub_emulator_timeout")
     )
 
-    # Detect xdist worker
+    # Detect xdist worker — use the shared tmp dir above all workers' bases
     shared_dir: Path | None = None
     if hasattr(config, "workerinput"):
-        root_dir = config.workerinput["workerroot"]
-        shared_dir = Path(root_dir) / ".pubsub_emulator"
+        root_tmp_dir = tmp_path_factory.getbasetemp().parent
+        shared_dir = root_tmp_dir / ".pubsub_emulator"
         shared_dir.mkdir(exist_ok=True)
 
     emulator = PubSubEmulator(
