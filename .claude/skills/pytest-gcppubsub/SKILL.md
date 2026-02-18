@@ -77,7 +77,9 @@ pubsub_project_id = "my-test-project"
 
 ## pytest-xdist Support
 
-Works automatically. When xdist workers are detected, the plugin coordinates via a file lock (`.pubsub_emulator/` directory) so only one emulator runs. All workers share it; the last worker to finish tears it down.
+Works automatically. When xdist workers are detected (`hasattr(config, "workerinput")`), the plugin uses `tmp_path_factory.getbasetemp().parent` to locate a shared temp directory across all workers, then coordinates via a file lock (`.pubsub_emulator/` subdirectory) so only one emulator runs. All workers share it; the last worker to finish tears it down.
+
+The `pubsub_emulator` fixture accepts `tmp_path_factory: pytest.TempPathFactory` for this coordination.
 
 ## Async Testing
 
